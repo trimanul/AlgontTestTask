@@ -1,0 +1,7 @@
+{
+    "db_config":{
+        "db_engine" : "sqlite",
+        "db_path" : "cpu_usage.db",
+        "db_dialect" : "pysqlite"
+    }
+}
