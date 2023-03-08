@@ -1,7 +1,8 @@
 import json
 import sqlalchemy as sa
-from sqlalchemy.orm import DeclarativeBase, Session
+from utils.utils import load_config
 from monitors.models import CPULoad
+from sqlalchemy.orm import Session
 from psutil import cpu_percent
 import datetime
 import threading
@@ -14,7 +15,7 @@ class BaseMonitor():
     Base monitor class
     """
     def __init__(self) -> None:
-        self.db_config = self.load_config()["db_config"]
+        self.db_config = load_config()["db_config"]
         db_url = sa.URL.create(
             f'{self.db_config["db_engine"]}+{self.db_config["db_dialect"]}',
             database=self.db_config["db_path"])
@@ -26,15 +27,6 @@ class BaseMonitor():
         handler.setFormatter(logging.Formatter(fmt='[%(asctime)s: %(levelname)s] %(message)s'))
         self.logger.addHandler(handler)
 
-
-    def load_config(self) -> dict:
-        """
-        Loads config file from json file ("config.json")
-        """
-        with open("./config.json") as config_file:
-            json_config = json.load(config_file)
-
-        return json_config
         
 class CPUMonitor(BaseMonitor):
     """
@@ -60,12 +52,11 @@ class CPUMonitor(BaseMonitor):
             self.record_load()
             sleep(5)
 
-    def run(self):
+    def run(self) -> None:
+        """
+        Starts cpu monitor thread
+        """
         self.logger.debug(f"Monitor started")
         monitor_thread = threading.Thread(target=self.start_recording, daemon=True)
         monitor_thread.start()
-        while True:
-            pass
-
-
 

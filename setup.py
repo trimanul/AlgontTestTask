@@ -1,8 +1,21 @@
 import sqlalchemy as sa
 import json
+from utils.utils import load_config
+from setuptools import setup
 
-with open("./config.json") as config_file:
-            config = json.load(config_file)
+setup(
+        name="algont_test_kudinov",
+        version="0.5.0",
+        install_requires=[
+                'Flask == 2.2.3',
+                'SQLAlchemy == 2.0.2',
+                'psutil == 5.6.7',
+                'importlib-metadata; python_version == "3.11"',
+        ],
+)
+
+
+config = load_config()["db_config"]
 
 db_url = sa.URL.create(
             f'{config["db_engine"]}+{config["db_dialect"]}',
