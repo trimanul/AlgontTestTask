@@ -19,6 +19,8 @@ def detect_gaps(points: list[dict], begin_datetime: datetime.datetime,desired_le
     minimal gap between points in seconds.
     Returns array, padded with gaps
     """
+    if len(points) == 0:
+        return []
 
     point_array = points[:]
 

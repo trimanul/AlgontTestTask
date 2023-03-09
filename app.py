@@ -59,8 +59,8 @@ def cpu_load_avg():
     
     points: list[dict] = []
 
-    stmt = sa.text("SELECT cpu_load.monitor_datetime, strftime('%M', cpu_load.monitor_datetime) as minute, avg(cpu_load.cpu_value) as average \
-                   FROM cpu_load WHERE strftime('%H', cpu_load.monitor_datetime)> '21' GROUP BY strftime('%H', cpu_load.monitor_datetime) ,minute;")
+    stmt = sa.text(f"SELECT cpu_load.monitor_datetime, strftime('%M', cpu_load.monitor_datetime) as minute, avg(cpu_load.cpu_value) as average\
+                   FROM cpu_load WHERE CAST(strftime('%H', cpu_load.monitor_datetime) AS INTEGER) > {hour_ago.hour} AND strftime('%d', cpu_load.monitor_datetime) LIKE '%{hour_ago.day}%' GROUP BY minute;")
     with Session(engine) as session:
         for row in session.execute(stmt):
             monitor_datetime, _, cpu_value = row
@@ -79,8 +79,8 @@ def cpu_load_avg_latest():
     hour_ago = datetime.datetime.now()
     hour_ago -= datetime.timedelta(hours=1)
 
-    stmt = sa.text("SELECT cpu_load.monitor_datetime, strftime('%M', cpu_load.monitor_datetime) as minute, avg(cpu_load.cpu_value) as average \
-                   FROM cpu_load WHERE strftime('%H', cpu_load.monitor_datetime)> '21' GROUP BY strftime('%H', cpu_load.monitor_datetime) ,minute ORDER BY cpu_load.monitor_datetime DESC;")
+    stmt = sa.text(f"SELECT cpu_load.monitor_datetime, strftime('%M', cpu_load.monitor_datetime) as minute, avg(cpu_load.cpu_value) as average\
+                   FROM cpu_load WHERE CAST(strftime('%H', cpu_load.monitor_datetime) AS INTEGER) > {hour_ago.hour} AND strftime('%d', cpu_load.monitor_datetime) LIKE '%{hour_ago.day}%' GROUP BY minute ORDER BY cpu_load.monitor_datetime DESC;")
     with Session(engine) as session:
         row = session.execute(stmt).first()
         monitor_datetime, _, cpu_value = row
