@@ -95,7 +95,7 @@ window.onload = () => {
                         );
                     }
                     
-                    setInterval(function(){ updateAvgChart() }, 120000);
+                    setInterval(function(){ updateAvgChart() }, 60000);
                 }
             );
         });
