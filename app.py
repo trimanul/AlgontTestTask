@@ -59,15 +59,15 @@ def cpu_load_avg():
     
     points: list[dict] = []
 
-    stmt = sa.text(f"SELECT cpu_load.monitor_datetime, strftime('%M', cpu_load.monitor_datetime) as minute, avg(cpu_load.cpu_value) as average\
-                   FROM cpu_load WHERE CAST(strftime('%H', cpu_load.monitor_datetime) AS INTEGER) > {hour_ago.hour} AND strftime('%d', cpu_load.monitor_datetime) LIKE '%{hour_ago.day}%' GROUP BY minute;")
+    stmt = sa.text(f"SELECT cpu_load.monitor_datetime, CAST(strftime('%M', cpu_load.monitor_datetime)AS INTEGER) as minute, avg(cpu_load.cpu_value) as average\
+                   FROM cpu_load WHERE CAST(strftime('%H', cpu_load.monitor_datetime) AS INTEGER) >= {hour_ago.hour} AND minute >= {hour_ago.minute} AND strftime('%d', cpu_load.monitor_datetime) LIKE '%{hour_ago.day}%' GROUP BY minute;")
     with Session(engine) as session:
         for row in session.execute(stmt):
             monitor_datetime, _, cpu_value = row
             points.append({"x": datetime.datetime.fromisoformat(monitor_datetime), "y": cpu_value})
     
     # Реализация разрывов в графике
-    points = detect_gaps(points, hour_ago, 60, 59)
+    points = detect_gaps(points, hour_ago, 60, 60)
     for point in points:
         point["x"] = point["x"].isoformat()
         
@@ -80,7 +80,7 @@ def cpu_load_avg_latest():
     hour_ago -= datetime.timedelta(hours=1)
 
     stmt = sa.text(f"SELECT cpu_load.monitor_datetime, strftime('%M', cpu_load.monitor_datetime) as minute, avg(cpu_load.cpu_value) as average\
-                   FROM cpu_load WHERE CAST(strftime('%H', cpu_load.monitor_datetime) AS INTEGER) > {hour_ago.hour} AND strftime('%d', cpu_load.monitor_datetime) LIKE '%{hour_ago.day}%' GROUP BY minute ORDER BY cpu_load.monitor_datetime DESC;")
+                   FROM cpu_load WHERE CAST(strftime('%H', cpu_load.monitor_datetime) AS INTEGER) >= {hour_ago.hour} AND strftime('%d', cpu_load.monitor_datetime) LIKE '%{hour_ago.day}%' GROUP BY minute ORDER BY cpu_load.monitor_datetime DESC;")
     with Session(engine) as session:
         row = session.execute(stmt).first()
         monitor_datetime, _, cpu_value = row
